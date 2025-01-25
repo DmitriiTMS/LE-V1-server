@@ -35,6 +35,9 @@ public class User {
     @Column(name = "instagram_name")
     private String instagramName;
 
+    @Column(name = "allowed")
+    private boolean allowed;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "role")
     private UserRole role;

@@ -27,12 +27,13 @@ public class UserResponseDTO {
     private Long id;
     private String name;
     private String email;
+    private boolean allowed;
 
     @JsonIgnore
     private String password;
 
-    private String phoneNumber;
     private UserRole role;
+
     private String token;
 
 }

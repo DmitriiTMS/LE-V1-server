@@ -50,6 +50,7 @@ public class UserServiceImpl implements UserService {
         return UserResponseDTO.builder()
                 .status(200)
                 .role(registerRequestDTO.getRole())
+                .name(registerRequestDTO.getName())
                 .token(token)
                 .message("Пользователь успешно зарегистрирован")
                 .build();
@@ -69,6 +70,7 @@ public class UserServiceImpl implements UserService {
         return UserResponseDTO.builder()
                 .status(200)
                 .message("Пользователь вошёл в систему")
+                .name(user.getName())
                 .role(user.getRole())
                 .token(token)
                 .build();
