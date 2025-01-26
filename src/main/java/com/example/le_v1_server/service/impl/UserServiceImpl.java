@@ -7,6 +7,7 @@ import com.example.le_v1_server.entity.User;
 import com.example.le_v1_server.exceptions.InvalidCredentialsException;
 import com.example.le_v1_server.exceptions.NotFoundException;
 import com.example.le_v1_server.exceptions.UserAlreadyExistsException;
+import com.example.le_v1_server.mapper.UserMapper;
 import com.example.le_v1_server.repository.UserRepository;
 import com.example.le_v1_server.security.JwtUtils;
 import com.example.le_v1_server.service.UserService;
@@ -15,6 +16,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 
 @Service
@@ -26,7 +29,7 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
 
-//    private final UserMapper userMapper;
+    private final UserMapper userMapper;
 
     @Override
     public UserResponseDTO registerUser(RegisterRequestDTO registerRequestDTO) {
@@ -34,8 +37,6 @@ public class UserServiceImpl implements UserService {
             throw new UserAlreadyExistsException("Пользователь с email " + registerRequestDTO.getEmail()
                     + " уже зарегистрирован");
         }
-
-        String token = jwtUtils.generateToken(registerRequestDTO.getEmail(), registerRequestDTO.getRole().name());
 
         User userToSave = User.builder()
                 .name(registerRequestDTO.getName())
@@ -47,9 +48,14 @@ public class UserServiceImpl implements UserService {
 
         userRepository.save(userToSave);
 
+        String token = jwtUtils.generateToken(
+                registerRequestDTO.getEmail(),
+                registerRequestDTO.getRole().name(),
+                userToSave.getId()
+        );
+
         return UserResponseDTO.builder()
                 .status(200)
-                .role(registerRequestDTO.getRole())
                 .name(registerRequestDTO.getName())
                 .token(token)
                 .message("Пользователь успешно зарегистрирован")
@@ -60,19 +66,34 @@ public class UserServiceImpl implements UserService {
     public UserResponseDTO loginUser(LoginRequestDTO loginRequestDTO) {
         User user = userRepository.findByEmail(loginRequestDTO.getEmail())
                 .orElseThrow(() -> new NotFoundException("Пользователь с email "
-                            + loginRequestDTO.getEmail() + " не найден"));
+                        + loginRequestDTO.getEmail() + " не найден"));
 
         if (!passwordEncoder.matches(loginRequestDTO.getPassword(), user.getPassword())) {
             throw new InvalidCredentialsException("Пароли не совпадают");
         }
-        String token = jwtUtils.generateToken(user.getEmail(), user.getRole().name());
+        String token = jwtUtils.generateToken(user.getEmail(), user.getRole().name(), user.getId());
 
         return UserResponseDTO.builder()
                 .status(200)
                 .message("Пользователь вошёл в систему")
                 .name(user.getName())
-                .role(user.getRole())
                 .token(token)
                 .build();
     }
+
+    @Override
+    public UserResponseDTO getUserById(Long id) {
+
+        User user = userRepository.findById(id).orElseThrow(() -> new NotFoundException("User Not Found"));
+        UserResponseDTO userDTO =  userMapper.toUserDTO(user);
+
+        return UserResponseDTO.builder()
+                .status(200)
+                .message("success")
+                .name(userDTO.getName())
+                .allowed(userDTO.isAllowed())
+                .build();
+    }
+
+
 }

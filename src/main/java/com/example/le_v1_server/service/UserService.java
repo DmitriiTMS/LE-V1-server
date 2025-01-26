@@ -9,11 +9,14 @@ public interface UserService {
 
     UserResponseDTO loginUser(LoginRequestDTO loginRequestDTO);
 
+    UserResponseDTO getUserById(Long id);
+
+
 //    Response getAllUsers();
 //
 //    User getCurrentLoggedInUser();
 //
-//    Response getUserById(Long id);
+
 //
 //    Response updateUser(Long id, UserDTO userDTO);
 //

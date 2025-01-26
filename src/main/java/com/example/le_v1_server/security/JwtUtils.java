@@ -30,10 +30,11 @@ public class JwtUtils {
         byte[] keyByte = secreteJwtString.getBytes(StandardCharsets.UTF_8);
         this.key = new SecretKeySpec(keyByte, "HmacSHA256");
     }
-    public String generateToken(String email, String role) {
+    public String generateToken(String email, String role, Long id) {
         return Jwts.builder()
                 .subject(email)
                 .claim("role", role)
+                .claim("id", id)
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME_IN_MILLISEC))
                 .signWith(key)
